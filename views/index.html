@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>chibi</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+</head>
+<body>
+<section class="section">
+    <div class="hero">
+        <div class="hero-body">
+            <div class="container has-text-centered">
+                <p class="title">
+                    chibi
+                </p>
+                <p class="subtitle">
+                    a cute, simple, rememberable URL shortener/redirect service
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="container has-text-centered is-max-desktop">
+        <div class="field has-addons">
+            <div class="control is-expanded">
+                <input class="input" type="text" name="url" placeholder="https://example.com">
+            </div>
+            <div id="button" class="control">
+                <button class="button is-primary" type="submit">
+                    Shorten
+                </button>
+            </div>
+        </div>
+        <div class="field has-addons has-addons-centered">
+            <p class="control">
+                <button class="button is-link" id="chibi_fun">Fun</button>
+            </p>
+            <p class="control">
+                <button class="button" id="chibi_short">Short</button>
+            </p>
+            <p class="control">
+                <button class="button" id="chibi_custom">Custom</button>
+            </p>
+            <p class="control">
+                <input class="input is-hidden" type="text" name="custom" placeholder="chibi">
+            </p>
+        </div>
+
+    </div>
+    <div class="container has-text-centered is-max-desktop mt-3">
+        <div class="notification is-primary is-hidden" id="shortest_url_container">
+            <p id="shortened_url"></p>
+        </div>
+    </div>
+</section>
+<script>
+    const button = document.getElementById('button');
+    const shortened_url = document.getElementById('shortened_url');
+    const shortest_url_container = document.getElementById('shortest_url_container');
+
+    const chibi_fun = document.getElementById('chibi_fun');
+    const chibi_short = document.getElementById('chibi_short');
+    const chibi_custom = document.getElementById('chibi_custom');
+    const chibi_custom_textbox = document.querySelector('input[name=custom]');
+
+    chibi_fun.addEventListener('click', () => {
+        chibi_fun.classList.add("is-link")
+        chibi_short.classList.remove("is-link")
+        chibi_custom.classList.remove("is-link")
+        chibi_custom_textbox.classList.add("is-hidden")
+    });
+    chibi_short.addEventListener('click', () => {
+        chibi_fun.classList.remove("is-link")
+        chibi_short.classList.add("is-link")
+        chibi_custom.classList.remove("is-link")
+        chibi_custom_textbox.classList.add("is-hidden")
+    });
+    chibi_custom.addEventListener('click', () => {
+        chibi_fun.classList.remove("is-link")
+        chibi_short.classList.remove("is-link")
+        chibi_custom.classList.add("is-link")
+        chibi_custom_textbox.classList.remove("is-hidden")
+        chibi_custom_textbox.focus()
+    });
+
+    button.addEventListener('click', async () => {
+        button.classList.add("is-loading")
+        const url = document.querySelector('input[name=url]').value;
+
+        let data = new FormData();
+        let suffix = '';
+        data.append('url', url);
+
+        if (chibi_fun.classList.contains("is-link")) {
+            data.append('type', 'fun');
+        } else if (chibi_short.classList.contains("is-link")) {
+            data.append('type', 'short');
+        } else if (chibi_custom.classList.contains("is-link")) {
+            data.append('type', 'custom');
+            suffix = `/${chibi_custom_textbox.value}`
+        }
+
+        const response = await fetch(`/api/v1/create${suffix}`, {
+            method: 'POST',
+            body: data,
+        });
+
+        const json = await response.json();
+        if (json["success"]) {
+            shortened_url.textContent = `{{ frontend_url }}/${json["data"]["id"]}`
+            shortest_url_container.classList.remove("is-hidden")
+            shortest_url_container.classList.add("is-success")
+            shortest_url_container.classList.remove("is-danger")
+        } else {
+            shortened_url.textContent = JSON.stringify(json["diagnostics"])
+            shortest_url_container.classList.remove("is-hidden")
+            shortest_url_container.classList.add("is-danger")
+            shortest_url_container.classList.remove("is-success")
+        }
+        button.classList.remove("is-loading")
+    });
+</script>
+</body>
+
+</html>
