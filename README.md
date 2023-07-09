@@ -2,6 +2,8 @@
 
 A simple, self-hosted link catalog / shortener / redirect service. 
 
+![image demonstrating chibi's UI](./docs/src/img/screenshot.png)
+
 ## Building 
 
 ```bash 
