@@ -28,7 +28,11 @@ type RedirectComponent struct {
 }
 
 func main() {
-	db, err := gorm.Open(sqlite.Open("database.db"), &gorm.Config{})
+	databasePath := os.Getenv("DATABASE_PATH")
+	if databasePath == "" {
+		databasePath = "database.db"
+	}
+	db, err := gorm.Open(sqlite.Open(databasePath), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
 	}
